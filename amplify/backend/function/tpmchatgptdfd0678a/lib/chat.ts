@@ -1,11 +1,11 @@
 import { APIGatewayProxyResult } from 'aws-lambda';
-import { initPinecone } from './util/pineconeclient';
-import { PineconeStore } from 'langchain/vectorstores/pinecone';
 import { OpenAIEmbeddings } from 'langchain/embeddings/openai';
+import { PineconeStore } from 'langchain/vectorstores/pinecone';
+import { env } from 'node:process';
+import { Convert, Credentials, LambdaFunctionURLEvent, QuestionHistory } from "./datamodels";
 import { makeChain } from './util/make-chain';
 import { getParameter } from './util/parameterStore';
-import { Convert, Credentials, LambdaFunctionURLEvent, QuestionHistory } from "./datamodels";
-import { env } from 'node:process';
+import { initPinecone } from './util/pineconeclient';
 
 // '/api/chat'
 export const chat = async (event: LambdaFunctionURLEvent): Promise<APIGatewayProxyResult> => {
@@ -55,7 +55,8 @@ export const chat = async (event: LambdaFunctionURLEvent): Promise<APIGatewayPro
   }
   // write OPENAI_API_KEY env var to the process because:
   // OPENAI_API_KEY is required to be an ENV var by current code dependency
-  env.OPENAI_API_KEY = credentials.openAiApiKey;
+  env.OPENAI_API_KEY =
+    window.localStorage.getItem('OPENAI_API_KEY') || credentials.openAiApiKey;
 
   //
   // Start of logic

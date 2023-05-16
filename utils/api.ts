@@ -1,12 +1,9 @@
 import axios from 'axios';
-// import {AxiosRequestConfig} from 'axios';
-// import { useAuth } from '@/providers/auth';
 import { AWS_API_URL } from '../config/aws-amplify';
 
 const axiosInstance = axios.create({
   baseURL: AWS_API_URL,
 });
-
 
 const authedApiCall = async (
   options: {
@@ -98,4 +95,9 @@ export const postPurgeDocuments = async(auth: any) => authedApiCall({
 export const getCollection = async(auth: any) => authedApiCall({
   method: 'GET',
   url: '/api/collection',
+}, auth);
+
+export const getProfile = async(auth: any) => authedApiCall({
+  method: 'GET',
+  url: '/api/profile',
 }, auth);
