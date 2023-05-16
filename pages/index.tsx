@@ -132,12 +132,14 @@ const PurgeDocuments = () => {
   );
 };
 
-const Profile = () => {
+const Profile = (onSetApiKey: (apiKey: string) => void) => {
   const auth = useAuth();
 
-  const [apiKey, setApiKey] = useState<string>(
-    window.localStorage.getItem('openai-api-key') || '',
-  );
+  const [apiKey, setApiKey] = useState<string>();
+
+  useEffect(() => {
+    setApiKey(window.localStorage.getItem('openai-api-key') || '');
+  }, [setApiKey]);
 
   const handleSetApiKey = (apiKey: string) => {
     window.localStorage.setItem('openai-api-key', apiKey);
@@ -284,7 +286,15 @@ export default function Home() {
     setPage(path);
   };
 
+  const [openAiApiKey, setOpenAiApiKey] = useState('');
+
   const [apiKeyPreview, setApiKeyPreview] = useState<string>('');
+
+  useEffect(() => {
+    const storedApiKey = window.localStorage.getItem('openai-api-key') || '';
+    setOpenAiApiKey(storedApiKey);
+    setApiKeyPreview('***' + storedApiKey.slice(storedApiKey.length - 4));
+  }, [setOpenAiApiKey]);
 
   useEffect(() => {
     const getUserProfile = async () => {
@@ -293,8 +303,8 @@ export default function Home() {
           const response = await getProfile(auth);
 
           if (response) {
-            if (response.data.apiKey) {
-              setApiKeyPreview(response.data.apiKey);
+            if (response.data.collectionSize) {
+              setCollectionSize(response.data.collectionSize);
             }
           }
         } catch (
@@ -308,13 +318,22 @@ export default function Home() {
     getUserProfile();
   }, [auth]);
 
+  const [collectionSize, setCollectionSize] = useState<number | null>(52);
+
   return (
     <>
       <Layout onNavigate={handleNavigate} apiKeyPreview={apiKeyPreview}>
         {page === 'home' ? (
           <div className="mx-auto flex flex-col gap-4">
             <div className="flex flex-col bg-slate-400/10 p-1 rounded-md border">
-              <div className="text-lg font-bold mt-0 m-2">Collection</div>
+              <div className="text-lg font-bold mt-0 m-2">
+                Collection
+                {collectionSize ? (
+                  <span className="text-sm font-normal ml-2">
+                    Size: ({collectionSize} documents)
+                  </span>
+                ) : null}
+              </div>
               <div className="flex flex-row gap-3 ml-2 mb-2">
                 <DocumentUpload />
                 <AddUrl />
@@ -445,7 +464,7 @@ export default function Home() {
                     </button>
                   </form>
                 </div>
-                <div className="flex flex-col justify-between w-full mt-3 m-3">
+                <div className="flex flex-row  w-full mt-3 m-3 gap-3 justify-end">
                   <div className="flex gap-3">
                     <select
                       value={model}
@@ -453,6 +472,22 @@ export default function Home() {
                       name="model"
                       id="model"
                       className="border px-2 py-1 rounded-md"
+                    >
+                      <option value="gpt-3.5-turbo">gpt-3.5-turbo</option>
+                      <option value="gpt-4">gpt-4</option>
+                      <option value="gpt-3.5-turbo-0301">
+                        gpt-3.5-turbo-0301
+                      </option>
+                      <option value="gpt-4-0314">gpt-4-0314</option>
+                    </select>
+                  </div>
+                  <div className="flex gap-3">
+                    <select
+                      value={model}
+                      onChange={(e) => setModel(e.target.value)}
+                      name="algorithm"
+                      id="algorithm"
+                      className="border px-2 py-1 rounded-md w-64"
                     >
                       <option value="gpt-3.5-turbo">gpt-3.5-turbo</option>
                       <option value="gpt-4">gpt-4</option>
@@ -473,7 +508,7 @@ export default function Home() {
             </main>
           </div>
         ) : (
-          <Profile />
+          <Profile onSetApiKey={setOpenAiApiKey} />
         )}
         <footer className="m-auto p-4">
           MVP for TPM. Powered by LangChainAI.

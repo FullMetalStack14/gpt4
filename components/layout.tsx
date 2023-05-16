@@ -31,7 +31,7 @@ export default function Layout({
             <div className="flex flex-grow"></div>
             {apiKeyPreview && (
               <div className="flex flex-row gap-2 items-center pr-4">
-                API Key:
+                API Key: {apiKeyPreview}
               </div>
             )}
             <div className="flex flex-col gap-2 ">
